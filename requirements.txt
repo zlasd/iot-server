@@ -1,5 +1,8 @@
 flask
+flask-sqlalchemy
 sqlalchemy
 sqlalchemy_utils
 pymysql
 paho-mqtt
+pyopenssl
+pytest

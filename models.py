@@ -1,16 +1,17 @@
 
+from datetime import datetime
+import math
+
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column,Integer,String,Text,DateTime, \
                 ForeignKey,Table,Float,Enum,desc,Boolean,func
 from sqlalchemy.orm import relationship,backref
 from flask import url_for
-from datetime import datetime
-import math
 
-Base = declarative_base()
+from app import db
 
-
-class Device(Base):
+class Device(db.Model):
     __tablename__ = 'device'
     
     ID = Column(Integer, primary_key=True)
@@ -34,7 +35,7 @@ class Device(Base):
     
 
     
-class Alert(Base):
+class Alert(db.Model):
     __tablename__ = 'alert'
     
     alertID = Column(Integer, primary_key=True)
