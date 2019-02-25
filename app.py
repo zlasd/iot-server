@@ -17,9 +17,9 @@ def create_app(test_config=None, debug=True, testing=False):
         app.config.from_object('config.ProductionConfig')
     db.init_app(app)
     
-    @app.route('/')
-    def index():
-        return 'hello'
+    # @app.route('/')
+    # def index():
+        # return 'hello'
     
     import views
     app.register_blueprint(views.bp)

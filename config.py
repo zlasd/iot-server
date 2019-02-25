@@ -12,7 +12,8 @@ class Config(object):
     DATABASE_PASSWORD = 'passw0rd'
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{}:{}@127.0.0.1/{}' \
         .format(DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_NAME)
-
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
     MAIN_TITLE = 'WebServer'
     SERVER_NAME = '127.0.0.1:8080'
 
