@@ -1,4 +1,5 @@
 import functools
+from datetime import datetime, timedelta
 
 from flask import (
     Blueprint, jsonify, request
@@ -12,17 +13,92 @@ bp = Blueprint('view', __name__)
 from models import Device, Alert
 
 
-@bp.route('/authen')
+@bp.route('/device/authen', methods=['POST'])
 def authen():
-    id = request.args.get('id', 'null')
-    passwd = request.args.get('passwd', 'null')
-    return jsonify({"id":id, "passwd":passwd})
+    id = request.json.get('id', 1)
+    passwd = request.json.get('passwd', "")
+    
+    dev = Device.query.filter_by(ID=id).first()
+    ok = check_password_hash(dev.passwd, passwd)
+    msg = "password not correct." if not ok else "ok"
+    return jsonify({"result":ok, "msg":msg})
 
 
-@bp.route('/statistics/<devices>')
-def getStatistics(devices):
-    devices = devices.split('-')
-    return jsonify(devices)
+@bp.route('/device', methods=['GET', 'POST'])
+def deviceInfo():
+    devices = Device.query.filter_by(live=True).all()
+    collect = []
+    for dev in devices:
+        collect.append({
+            "deviceID": dev.ID,
+            "name": dev.name,
+            "type": dev.type,
+            "address": dev.address,
+            "joinTime": dev.joinTime
+        })
+    return jsonify(collect)
+
+
+@bp.route('/statistics', methods=['POST'])
+def getStatistics():
+    # get params
+    devicesID = request.json.get('id', 'all')
+    
+    # query database
+    now = datetime.now()
+    devices = Device.query.filter_by(live=True)
+    alerts = Alert.query
+    devices_weekly = Device.query
+    alerts_weekly = Alert.query
+    
+    # if IDs are given, filtering
+    if devicesID != 'all':
+        devices = devices.filter(Device.ID.in_(devicesID))
+        alerts = alerts.filter(Alert.deviceID.in_(devicesID))
+        devices_weekly = devices_weekly.filter(
+            Device.ID.in_(devicesID))
+        alerts_weekly = alerts_weekly.filter(
+            Alert.deviceID.in_(devicesID))    
+    
+    # apply query
+    devices = devices.all()
+    alerts = alerts.all()
+    devices_weekly = devices_weekly.filter(
+        Device.joinTime.between(now-timedelta(days=7), now)
+    ).count()
+    alerts_weekly = alerts_weekly.filter(
+        Alert.time.between(now-timedelta(days=7), now)
+    ).count()
+    
+    
+    # response framework
+    collect = {
+        "liveDevices": len(devices),
+        "newDevicesWeekly": devices_weekly,
+        "totalAlert": len(alerts),
+        "alertWeekly": alerts_weekly,
+        "deviceList": [],
+        "alertList": [],
+    }
+    
+    for dev in devices:
+        collect['deviceList'].append({
+            "deviceID": dev.ID,
+            "name": dev.name,
+            "type": dev.type,
+            "address": dev.address,
+            "joinTime": dev.joinTime
+        })
+    for alert in alerts:
+        collect['alertList'].append({
+            "deviceID": alert.deviceID,
+            "alertID": alert.alertID,
+            "time": alert.time,
+            "personNo": alert.personNo,
+            "confidence": alert.confidence
+        })
+    
+    return jsonify(collect)
 
     
 @bp.route('/device/add', methods=['POST'])
@@ -39,7 +115,7 @@ def addDevice():
             "addr":addr, "passwd":passwd})
 
 
-@bp.route('/device/add', methods=['POST'])
+@bp.route('/alert/add', methods=['POST'])
 def addAlert():
     deviceID = request.form['deviceID']
     personNo = request.form['personNo']
