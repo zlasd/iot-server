@@ -101,6 +101,11 @@ def getStatistics():
     return jsonify(collect)
 
     
+@bp.route('/device/alert', methods=['POST'])
+def alert():
+    return jsonify({"result":True, "msg":"ok"})
+    
+    
 @bp.route('/device/add', methods=['POST'])
 def addDevice():
     name = request.form['name']

@@ -1,0 +1,84 @@
+
+
+1.deviceAuthen
+
+https://[IP:port]/device/authen POST
+
+{
+    "id": xxx,
+    "passwd": xxx,
+}
+
+返回：{result:True/False, msg:"xxx"}
+
+
+2.deviceInfo
+
+https://[IP:port]/device GET/POST
+
+返回： [
+    {
+        deviceID: xxx,
+        name: xxx,
+        type: xxx,
+        address, xxx,
+        joinTime: xxx,
+    },
+    ...
+]
+
+
+3.getStatistic
+
+https://[IP:port]/statistics POST
+
+{
+    "id": [
+        xxx, xxy, xxz,
+    ]
+}
+
+返回：{
+    liveDevices: xxx,
+    newDevicesWeekly: xxx, 
+    totalAlert: xxx,
+    alertWeekly: xxx,
+    deviceList: [
+        {
+            deviceID: xxx,
+            name: xxx,
+            type: xxx,
+            address, xxx,
+            joinTime: xxx,
+        },
+    ],
+    alertList: [
+        {
+            deviceID: xxx,
+            alertID: xxx,
+            time: xxx,
+            personNo: xxx,
+            confidence:1,
+        },
+        ...
+    ],
+}
+
+
+4.alert
+
+https://[IP:port]/device/alert POST
+
+{
+    "deviceID": xxx,
+    "alertInfo": {
+        "time": xxx,
+        "personNo": xxx,
+        "confidence": xxx,
+    }
+}
+
+返回：{
+    result: True/False,
+    msg: xxx
+}
