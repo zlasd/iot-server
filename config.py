@@ -15,12 +15,10 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     MAIN_TITLE = 'WebServer'
-    SERVER_NAME = '127.0.0.1:8080'
-    
+
+    PORT = 8080
     MQTT_TOPIC = '/device/#'
 
-class ProductionConfig(Config):
-    SERVER_NAME = '0.0.0.0:8080'
 
 class DebugConfig(Config):
     DEBUG = True

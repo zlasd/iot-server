@@ -4,7 +4,7 @@ import os
 from flask import jsonify
 import pytest
 
-from app import app, db
+from myapp import app, db
 
 
 @pytest.fixture

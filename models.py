@@ -9,7 +9,7 @@ from sqlalchemy import Column,Integer,String,Text,DateTime, \
 from sqlalchemy.orm import relationship,backref
 from flask import url_for
 
-from app import db
+from myapp import db
 
 class Device(db.Model):
     __tablename__ = 'device'
