@@ -15,10 +15,21 @@ def client():
 
 
 def test_authen(client):
-    rv = client.get('/authen?id=200&passwd=崩崩崩')
-    
-    with app.app_context():
-        resp = rv.get_json()
-        ground_truth = jsonify({"id":"200", "passwd":"崩崩崩"}).get_json()
-        assert resp == ground_truth
+    rv = client.post('/device/authen', json={
+        'id': 1, 'passwd': 'ljhandlwt'
+    })
+    json_data = rv.get_json()
+    assert json_data['msg'] == 'ok'
 
+
+def test_statistics(client):
+    rv = client.post('/statistics', json={'id':'all'})
+    json_data = rv.get_json()
+    assert json_data.get('liveDevices', None) is not None
+
+
+def test_deviceInfo(client):
+    rv = client.post('/device')
+    json_data = rv.get_json()
+    assert len(json_data) > 0
+    
