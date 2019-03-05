@@ -103,6 +103,16 @@ def getStatistics():
     
 @bp.route('/device/alert', methods=['POST'])
 def alert():
+    deviceID = request.json.get('deviceID', None)
+    if not deviceID:
+        return jsonify({"result":False, "msg":"need device ID"})
+    # personNo = request.json['alertInfo']['personNo']
+    # confidence = request.json['alertInfo']['confidence']
+    # time = request.json['alertInfo']['time']
+    # new_alert = Alert(deviceID, personNo, confidence, time)
+    # from app import db
+    # db.session.add(new_alert)
+    # db.session.commit()
     return jsonify({"result":True, "msg":"ok"})
     
     

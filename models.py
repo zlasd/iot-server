@@ -46,11 +46,11 @@ class Alert(db.Model):
     
     device = relationship('Device', backref=backref('alerts', order_by=desc(time)))
     
-    def __init__(self, deviceID, personNo, confidence):
+    def __init__(self, deviceID, personNo, confidence, time=None):
         self.deviceID = deviceID
         self.personNo = personNo
         self.confidence = confidence
-        self.time = datetime.now()
+        self.time = time if time else datetime.now()
     
     def __repr__(self):
         return '<Alert {}>'.format(self.alertID)
