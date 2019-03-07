@@ -12,15 +12,10 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     img_jpg = 'test1_1.jpg'
-    # 解码
-    #img_data = base64.b64decode(msg.payload)
     json_data=msg.payload
-    print(type(json_data))
-    raw_data=json.loads(str(json_data))
-    print(raw_data)
+    raw_data=json.loads(str(json_data, encoding="utf-8"))
     base64_string = raw_data["image_base64_string"]
     img_data = base64.b64decode(base64_string)
-    # 解码存储为动图
     imgfile = open("/home/zhanghua/Downloads/" + img_jpg, 'wb')
     imgfile.write(img_data)
     imgfile.close()
