@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import base64
 import json
-
+import requests
 from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
