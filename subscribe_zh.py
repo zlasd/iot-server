@@ -47,6 +47,8 @@ def on_message(client, userdata, msg):
     session.add(alert)
     session.commit()
     session.close()
+    payload = {'Device_id': device.ID, 'personNo': alert.personNo,'confidence':alert.confidence,'fight_gif':base64_string}
+    requests.post("https://localhost/post", data=payload)
 
 
 
