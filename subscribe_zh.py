@@ -1,15 +1,13 @@
-import paho.mqtt.client as mqtt
+import datetime
 import base64
 import json
-import requests
-from flask import Flask
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy_utils import database_exists, create_database
-import config
-from models import Base, Device, Alert
 
+import requests
+import paho.mqtt.client as mqtt
+
+
+from myapp import app, db
+from models import Device, Alert
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -18,39 +16,59 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe(("hello/world", 1))
+    # client.subscribe((app.config['MQTT_TOPIC'], 1))
+    message_callback_add('/device/add', deviceAdd)
+    message_callback_add('/device/alert', alert)
 
-# The callback for when a PUBLISH message is received from the server.
-def on_message(client, userdata, msg):
-    #get the alert info
-    img_jpg = 'test1_1.jpg'
+def deviceAdd(client, userdata, msg):
+    # unpack json payload
     json_data=msg.payload
     raw_data=json.loads(str(json_data, encoding="utf-8"))
+
+    device = Device(raw_data["serial-number"],
+        raw_data["type"], raw_data["addresss"],
+        raw_data["passwd"])
+    db.session.add(device)
+    db.session.commit()
+    print(datetime.datetime.now(), 
+        "new device added:", raw_data["serial-number"])
+    
+    
+def alert(client, userdata, msg):
+    # unpack json payload
+    json_data=msg.payload
+    raw_data=json.loads(str(json_data, encoding="utf-8"))
+    
+    device = Device.query.filter_by(
+        name=raw_data["serial-number"]).first()
+    alert=Alert(deviceID=device.ID,
+        personNo=raw_data["personNo"],
+        confidence=raw_data["confidence"])
+    db.session.add(alert)
+    db.session.commit()
+       
+    #save alert image
+    img_path = app.config['MQTT_IMG_PATH'] + 'alert-' + alert.alertID + '.jpg'
     base64_string = raw_data["image_base64_string"]
     img_data = base64.b64decode(base64_string)
-    imgfile = open("/home/zhanghua/Downloads/" + img_jpg, 'wb')
-    imgfile.write(img_data)
-    imgfile.close()
+    with open(img_path, 'wb') as imgf:
+        imgf.write(img_data)
 
-    app = Flask(__name__)
-    app.config.from_object('config')
+    # notify HTTP server in localhost
+    payload = {'deviceID': device.ID, 
+        'alertInfo':{
+            'personNo': alert.personNo,
+            'confidence':alert.confidence,
+            'time': alert.time
+        }
+    }
+    requests.post("http://127.0.0.1:"+app.config['PORT']+"/device/alert",
+        headers={"Content-Type: application/json"}, data=payload)
 
-    engine = create_engine(app.config['DB_CONNECT_STRING'], echo=True)
-    if not database_exists(engine.url):
-        create_database(engine.url)
-    DB_Session = sessionmaker(bind=engine)
-    session = DB_Session()
-    #Base.metadata.create_all(engine)
-    device = Device(name='camera0',type=raw_data["type"],addr=raw_data["address"],passwd=raw_data["passwd"])
-    alert=Alert(deviceID=device.ID,personNo=raw_data["personNo"],confidence=raw_data["confidence"])
-    session.add(device)
-    session.add(alert)
-    session.commit()
-    session.close()
-    payload = {'Device_id': device.ID, 'personNo': alert.personNo,'confidence':alert.confidence,'fight_gif':base64_string}
-    requests.post("https://localhost/post", data=payload)
-
-
+        
+def on_message(client, userdata, msg):
+    print("Received message '" + str(msg.payload) + "' on topic '"
+          + msg.topic + "' with QoS " + str(msg.qos))
 
 
 client = mqtt.Client()

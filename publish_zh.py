@@ -1,8 +1,10 @@
-import paho.mqtt.client as mqtt
 import base64
 import json
-from flask import jsonify
 from sys import argv
+
+import paho.mqtt.client as mqtt
+
+from config import Config
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -22,17 +24,17 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.username_pw_set("hachina", password="123456")
+client.username_pw_set(Config.MQTT_USER, password=Config.MQTT_PASSWD)
 
 client.connect("127.0.0.1", 1883, 60)
 
 
-img_gif = 'Negev_lily.gif'
+# img_gif = 'Negev_lily.gif'
 img_jpg = 'test1.jpg'
 
 
 ENCODING = 'utf-8'    # 指定编码形式
-IMAGE_NAME = "/home/zhanghua/Downloads/" + img_jpg
+IMAGE_NAME = "env/" + img_jpg
 
 # 读取二进制图片，获得原始字节码，注意 'rb'
 with open(IMAGE_NAME, 'rb') as jpg_file:
@@ -46,14 +48,8 @@ base64_string = base64_bytes.decode(ENCODING)
 
 # 用字典的形式保存
 raw_data = {}
-raw_data["name"] = IMAGE_NAME
+raw_data["serial-number"] = "设备1"
 raw_data["image_base64_string"] = base64_string
-raw_data["type"] = "TEST"
-raw_data["address"] = "TEST"
-raw_data["passwd"] = "TEST"
-raw_data["joinTime"] = "TEST"
-raw_data["live"] = "1"
-raw_data["alertID"] = "1"
 raw_data["personNo"] = "2"
 raw_data["confidence"] = "1"
 
@@ -62,4 +58,4 @@ json_data = json.dumps(raw_data, indent=2)
 print(type(json_data))
 
 #base64_data = base64.b64encode(f.read())
-client.publish("hello/world", json_data)
+client.publish("/device/alert", json_data)
