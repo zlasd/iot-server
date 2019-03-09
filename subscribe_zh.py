@@ -1,3 +1,4 @@
+import os
 import datetime
 import base64
 import json
@@ -14,11 +15,6 @@ from models import Device, Alert
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed.
-    # client.subscribe((app.config['MQTT_TOPIC'], 1))
-    message_callback_add('/device/add', deviceAdd)
-    message_callback_add('/device/alert', alert)
 
 def deviceAdd(client, userdata, msg):
     # unpack json payload
@@ -39,31 +35,40 @@ def alert(client, userdata, msg):
     json_data=msg.payload
     raw_data=json.loads(str(json_data, encoding="utf-8"))
     
-    device = Device.query.filter_by(
-        name=raw_data["serial-number"]).first()
-    alert=Alert(deviceID=device.ID,
-        personNo=raw_data["personNo"],
-        confidence=raw_data["confidence"])
-    db.session.add(alert)
-    db.session.commit()
+    with app.app_context():
+        device = Device.query.filter_by(
+            name=raw_data["serial-number"]).first()
+        alert=Alert(deviceID=device.ID,
+            personNo=raw_data["personNo"],
+            confidence=raw_data["confidence"])
+        db.session.add(alert)
+        db.session.commit()
+        
+        deviceID = device.ID
+        alertID = alert.alertID
+        personNo = alert.personNo
+        confidence = alert.confidence
+        time = alert.time
        
     #save alert image
-    img_path = app.config['MQTT_IMG_PATH'] + 'alert-' + alert.alertID + '.jpg'
+    os.makedirs(app.config['MQTT_IMG_PATH'], exist_ok=True)
+    img_path = app.config['MQTT_IMG_PATH'] + 'alert-' + str(alertID) + '.jpg'
     base64_string = raw_data["image_base64_string"]
     img_data = base64.b64decode(base64_string)
     with open(img_path, 'wb') as imgf:
         imgf.write(img_data)
 
     # notify HTTP server in localhost
-    payload = {'deviceID': device.ID, 
+    payload = {'deviceID': deviceID, 
         'alertInfo':{
-            'personNo': alert.personNo,
-            'confidence':alert.confidence,
-            'time': alert.time
+            'personNo': personNo,
+            'confidence':confidence,
+            'time': time
         }
     }
-    requests.post("http://127.0.0.1:"+app.config['PORT']+"/device/alert",
-        headers={"Content-Type: application/json"}, data=payload)
+    print(payload)
+    # requests.post("http://127.0.0.1:"+str(app.config['PORT'])+"/device/alert",
+        # headers={"Content-Type: application/json"}, data=payload)
 
         
 def on_message(client, userdata, msg):
@@ -71,16 +76,19 @@ def on_message(client, userdata, msg):
           + msg.topic + "' with QoS " + str(msg.qos))
 
 
-client = mqtt.Client()
+client = mqtt.Client("subscriber")
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.username_pw_set("hachina", password="123456")
+client.username_pw_set(app.config["MQTT_USER"],
+            password=app.config["MQTT_PASSWD"])
 
 client.connect("127.0.0.1", 1883, 60)
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
+
+client.subscribe('/device/#', 1)
+client.message_callback_add('/device/add', deviceAdd)
+client.message_callback_add('/device/alert', alert)
+print("add callback")
+
 client.loop_forever()
