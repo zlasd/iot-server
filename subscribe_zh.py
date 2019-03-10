@@ -2,6 +2,8 @@ import os
 import datetime
 import base64
 import json
+import traceback
+from functools import wraps
 
 import requests
 import paho.mqtt.client as mqtt
@@ -11,11 +13,21 @@ from myapp import app, db
 from models import Device, Alert
 
 
+def error_prone(f):
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        try:
+            f(*args, **kwds)
+        except Exception as ex:
+            print(traceback.format_exc())
+    return wrapper
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
 
+@error_prone
 def deviceAdd(client, userdata, msg):
     # unpack json payload
     json_data=msg.payload
@@ -30,6 +42,7 @@ def deviceAdd(client, userdata, msg):
         "new device added:", raw_data["serial-number"])
     
     
+@error_prone
 def alert(client, userdata, msg):
     # unpack json payload
     json_data=msg.payload
@@ -67,8 +80,8 @@ def alert(client, userdata, msg):
         }
     }
     print(payload)
-    # requests.post("http://127.0.0.1:"+str(app.config['PORT'])+"/device/alert",
-        # headers={"Content-Type: application/json"}, data=payload)
+    requests.post("http://127.0.0.1:"+str(app.config['PORT'])+"/device/alert",
+        headers={"Content-Type": "application/json"}, data=payload)
 
         
 def on_message(client, userdata, msg):
