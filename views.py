@@ -16,11 +16,17 @@ from models import Device, Alert
 @bp.route('/device/authen', methods=['POST'])
 def authen():
     id = request.json.get('id', 1)
+    if type(id) != int:
+        id = int(id)
     passwd = request.json.get('passwd', "")
     
-    dev = Device.query.filter_by(ID=id).first()
-    ok = check_password_hash(dev.passwd, passwd)
-    msg = "password not correct." if not ok else "ok"
+    try:
+        dev = Device.query.filter_by(ID=id).first()
+        ok = check_password_hash(dev.passwd, passwd)
+        msg = "password not correct." if not ok else "ok"
+    except Exception as ex:
+        ok = False
+        msg = "Parameters broken"
     return jsonify({"result":ok, "msg":msg})
 
 
@@ -51,25 +57,28 @@ def getStatistics():
     devices_weekly = Device.query
     alerts_weekly = Alert.query
     
-    # if IDs are given, filtering
-    if devicesID != 'all':
-        devices = devices.filter(Device.ID.in_(devicesID))
-        alerts = alerts.filter(Alert.deviceID.in_(devicesID))
+    
+    try:
+        # if IDs are given, filtering
+        if devicesID != 'all':
+            devices = devices.filter(Device.ID.in_(devicesID))
+            alerts = alerts.filter(Alert.deviceID.in_(devicesID))
+            devices_weekly = devices_weekly.filter(
+                Device.ID.in_(devicesID))
+            alerts_weekly = alerts_weekly.filter(
+                Alert.deviceID.in_(devicesID))    
+        
+        # apply query
+        devices = devices.all()
+        alerts = alerts.all()
         devices_weekly = devices_weekly.filter(
-            Device.ID.in_(devicesID))
+            Device.joinTime.between(now-timedelta(days=7), now)
+        ).count()
         alerts_weekly = alerts_weekly.filter(
-            Alert.deviceID.in_(devicesID))    
-    
-    # apply query
-    devices = devices.all()
-    alerts = alerts.all()
-    devices_weekly = devices_weekly.filter(
-        Device.joinTime.between(now-timedelta(days=7), now)
-    ).count()
-    alerts_weekly = alerts_weekly.filter(
-        Alert.time.between(now-timedelta(days=7), now)
-    ).count()
-    
+            Alert.time.between(now-timedelta(days=7), now)
+        ).count()
+    except Exception as ex:
+        return jsonify({"msg":"Parameters broken, check params type"})
     
     # response framework
     collect = {
