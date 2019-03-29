@@ -117,3 +117,16 @@ MQTT服务器部分
 }
 
 
+WX服务器部分
+
+1. Alert
+
+http://[IP:port]/alert POST
+
+{
+    "alertid": "5",
+    "deviceid": "123456",
+    "time": "2019-2-22 01:09:09",
+    "imgurl": ["http://qimg.hxnews.com/2019/0130/1548837838511.jpg",
+        "https://ss3.baidu.com/-fo3dSag_xI4khGko9WTAnF6hhy/image/h%3D300/sign=e8ce788890510fb367197197e933c893/b999a9014c086e061396097a0c087bf40ad1cbc0.jpg"]
+}

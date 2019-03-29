@@ -65,19 +65,21 @@ def alert(client, userdata, msg):
        
     #save alert image
     os.makedirs(app.config['MQTT_IMG_PATH'], exist_ok=True)
-    img_path = app.config['MQTT_IMG_PATH'] + 'alert-' + str(alertID) + '.jpg'
+    img_path = app.config['MQTT_IMG_PATH'] + 'alert-' + str(alertID) + '.gif'
     base64_string = raw_data["image_base64_string"]
     img_data = base64.b64decode(base64_string)
     with open(img_path, 'wb') as imgf:
         imgf.write(img_data)
 
     # notify HTTP server in localhost
-    payload = {'deviceID': deviceID, 
-        'alertInfo':{
-            'personNo': personNo,
-            'confidence':confidence,
-            'time': time
-        }
+    payload = {
+        'deviceID': deviceID, 
+        'alertID': alertID,
+        'time': time,
+        # 'alertInfo':{
+            # 'personNo': personNo,
+            # 'confidence':confidence,
+        # }
     }
     print(payload)
     requests.post("http://127.0.0.1:"+str(app.config['PORT'])+"/device/alert",
@@ -96,7 +98,7 @@ client.on_message = on_message
 client.username_pw_set(app.config["MQTT_USER"],
             password=app.config["MQTT_PASSWD"])
 
-client.connect("127.0.0.1", 1883, 60)
+client.connect("0.0.0.0", 1883, 60)
 
 
 client.subscribe('/device/#', 1)

@@ -18,10 +18,10 @@ client = mqtt.Client("publisher")
 client.on_connect = on_connect
 client.on_publish = on_publish
 
-client.username_pw_set(Config.MQTT_USER,
-            password=Config.MQTT_PASSWD)
+# client.username_pw_set(Config.MQTT_USER,
+            # password=Config.MQTT_PASSWD)
 
-client.connect("127.0.0.1", 1883, 60)
+client.connect(Config.MQTT_SERVER, 1883, 60)
 print("connected")
 
 # img_gif = 'Negev_lily.gif'

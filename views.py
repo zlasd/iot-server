@@ -4,7 +4,9 @@ from datetime import datetime, timedelta
 from flask import (
     Blueprint, jsonify, request
 )
+from flask import current_app as app
 from werkzeug.security import check_password_hash, generate_password_hash
+import requests
 
 
 bp = Blueprint('view', __name__)
@@ -112,16 +114,30 @@ def getStatistics():
     
 @bp.route('/device/alert', methods=['POST'])
 def alert():
-    deviceID = request.json.get('deviceID', None)
+    params = request.json
+    deviceID = params.get('deviceID', None)
     if not deviceID:
         return jsonify({"result":False, "msg":"need device ID"})
-    # personNo = request.json['alertInfo']['personNo']
-    # confidence = request.json['alertInfo']['confidence']
-    # time = request.json['alertInfo']['time']
-    # new_alert = Alert(deviceID, personNo, confidence, time)
-    # from app import db
-    # db.session.add(new_alert)
-    # db.session.commit()
+    
+    wx_url = 'http://'+app.config['WX_SERVER']+'/alert'
+    alertID = params.get('alertID', None)
+    if alertID is None:
+        return jsonify({"result":False, "msg":"need alert ID"})
+    time = params.get('time', None)
+    time = datetime.now() if time is None else time
+    
+    img_url = 'http://{}:{}/static/alert-{}.gif'.format(app.config['MQTT_SERVER'], 8000, alertID)
+    payload = {
+        'alertid': alertID, 
+        'deviceid': deviceID,
+        'time': time,
+        'imgurl': [img_url],
+    }
+    try:
+        requests.post(wx_url, headers={"Content-Type":
+            "application/json"}, data=payload)
+    except Exception as ex:
+        return jsonify({"result":False, "msg":"WX server error."})
     return jsonify({"result":True, "msg":"ok"})
     
     
@@ -132,7 +148,7 @@ def addDevice():
     addr = request.form['address']
     passwd = generate_password_hash(request.form['passwd'])
     new_device = Device(name, type, addr, passwd)
-    from app import db
+    from myapp import db
     db.session.add(new_device)
     db.session.commit()
     return jsonify({"name":name, "type":type,
@@ -145,7 +161,7 @@ def addAlert():
     personNo = request.form['personNo']
     confidence = request.form['confidence']
     new_alert = Alert(deviceID, personNo, confidence)
-    from app import db
+    from myapp import db
     db.session.add(new_alert)
     db.session.commit()
     return jsonify({"deviceID":deviceID,

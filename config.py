@@ -21,10 +21,14 @@ class Config(object):
     MQTT_PASSWD = '123456'
     MQTT_IMG_PATH = 'env/alert-img/'
     
+    
 
 
 class DebugConfig(Config):
     DEBUG = True
+    PORT = 8000
+    MQTT_SERVER = '127.0.0.1'
+    WX_SERVER = '127.0.0.1'
     
 class TestingConfig(Config):
     TESTING = True
