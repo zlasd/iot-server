@@ -1,4 +1,5 @@
 import functools
+import json
 from datetime import datetime, timedelta
 
 from flask import (
@@ -135,7 +136,7 @@ def alert():
     }
     try:
         requests.post(wx_url, headers={"Content-Type":
-            "application/json"}, data=payload)
+            "application/json"}, data=json.dumps(payload))
     except Exception as ex:
         return jsonify({"result":False, "msg":"WX server error."})
     return jsonify({"result":True, "msg":"ok"})
