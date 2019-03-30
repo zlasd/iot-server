@@ -25,7 +25,7 @@ client.connect(Config.MQTT_SERVER, 1883, 60)
 print("connected")
 
 # img_gif = 'Negev_lily.gif'
-img_jpg = 'test1.jpg'
+img_jpg = 'test.gif'
 
 
 ENCODING = 'utf-8'    # 指定编码形式
@@ -55,5 +55,5 @@ json_data = json.dumps(raw_data, indent=2)
 #client.loop()
 #base64_data = base64.b64encode(f.read())
 client.publish("/device/alert", json_data, 1)
-time.sleep(1)
+time.sleep(5)
 client.disconnect()

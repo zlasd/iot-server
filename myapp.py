@@ -1,4 +1,4 @@
-import argparse
+# import argparse
 from datetime import datetime
 
 from flask import Flask, request
@@ -6,9 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 import config
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--debug', action='store_true', help='debug')
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--debug', action='store_true', help='debug')
+# args = parser.parse_args()
 
 db = SQLAlchemy()
 
@@ -33,7 +33,7 @@ def create_app(test_config=None, debug=False, testing=False):
     
     return app
 
-app = create_app(debug=args.debug)
+app = create_app(debug=False)
 
 if __name__ == '__main__':
     # app.run(ssl_context='adhoc')
