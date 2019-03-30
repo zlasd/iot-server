@@ -119,7 +119,7 @@ def alert():
     if not deviceID:
         return jsonify({"result":False, "msg":"need device ID"})
     
-    wx_url = 'http://'+app.config['WX_SERVER']+'/alert'
+    wx_url = 'http://'+app.config['WX_SERVER']+'/wechatserver/alert'
     alertID = params.get('alertID', None)
     if alertID is None:
         return jsonify({"result":False, "msg":"need alert ID"})
