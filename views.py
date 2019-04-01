@@ -147,7 +147,7 @@ def addDevice():
     name = request.form['name']
     type = request.form['type']
     addr = request.form['address']
-    passwd = generate_password_hash(request.form['passwd'])
+    passwd = request.form['passwd']
     new_device = Device(name, type, addr, passwd)
     from myapp import db
     db.session.add(new_device)

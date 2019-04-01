@@ -9,6 +9,8 @@ from sqlalchemy import Column,Integer,String,Text,DateTime, \
 from sqlalchemy.orm import relationship,backref
 from flask import url_for
 
+from werkzeug.security import generate_password_hash
+
 from myapp import db
 
 class Device(db.Model):
@@ -26,7 +28,7 @@ class Device(db.Model):
         self.name = name
         self.type = type
         self.address = addr
-        self.passwd = passwd
+        self.passwd = generate_password_hash(passwd)
         self.joinTime = datetime.now()
         self.live = True
         

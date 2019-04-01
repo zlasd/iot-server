@@ -33,11 +33,12 @@ def deviceAdd(client, userdata, msg):
     json_data=msg.payload
     raw_data=json.loads(str(json_data, encoding="utf-8"))
 
-    device = Device(raw_data["serial-number"],
-        raw_data["type"], raw_data["addresss"],
-        raw_data["passwd"])
-    db.session.add(device)
-    db.session.commit()
+    with app.app_context():
+        device = Device(raw_data["serial-number"],
+            raw_data["type"], raw_data["address"],
+            raw_data["passwd"])
+        db.session.add(device)
+        db.session.commit()
     print(datetime.datetime.now(), 
         "new device added:", raw_data["serial-number"])
     
