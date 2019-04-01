@@ -76,7 +76,7 @@ def alert(client, userdata, msg):
     payload = {
         'deviceID': deviceID, 
         'alertID': alertID,
-        'time': time,
+        'time': time.isoformat(' ', 'seconds'),
         # 'alertInfo':{
             # 'personNo': personNo,
             # 'confidence':confidence,

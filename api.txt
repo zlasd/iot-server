@@ -71,12 +71,9 @@ https://[IP:port]/statistics POST
 https://[IP:port]/device/alert POST
 
 {
-    "deviceID": xxx,
-    "alertInfo": {
-        "time": xxx,
-        "personNo": xxx,
-        "confidence": xxx,
-    }
+    'deviceID': xxx, 
+    'alertID': xxx,
+    'time': xxx,
 }
 
 返回：{
