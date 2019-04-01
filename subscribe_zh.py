@@ -84,7 +84,7 @@ def alert(client, userdata, msg):
     }
     print(payload)
     requests.post("http://127.0.0.1:"+str(app.config['PORT'])+"/device/alert",
-        headers={"Content-Type": "application/json"}, data=payload)
+        headers={"Content-Type": "application/json"}, data=json.dumps(payload))
 
         
 def on_message(client, userdata, msg):
